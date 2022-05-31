@@ -1,12 +1,26 @@
-echo '$1'
-echo '$2'
-SERVICE_NAME =$1
+#!/bin/bash
 set -o errexit
 set -o nounset
 
 IFS=$(printf '\n\t')
 
-if [[ $(which docker) && $(docker --version) ]]; then
+
+while getopts 's:' OPTION; do
+  case "$OPTION" in
+    s)
+      
+      SERVICE_NAME="$OPTARG"
+      ;;
+    ?)
+      echo "script usage: $(basename \$0) [-l] [-h] [-a somevalue]" >&2
+      exit 1
+      ;;
+  esac
+done
+echo "got service name = $SERVICE_NAME"
+shift "$(($OPTIND -1))"
+
+if [ -x "$(command -v docker)" ]; then
     echo "DOCKER IS ALREADY INSTALLED...!"
   else
     echo "Installing docker..."
@@ -26,7 +40,7 @@ if [[ $(which docker) && $(docker --version) ]]; then
     sleep 5
 fi
 
-if [[ $(which docker-compose) && $(docker-compose --version) ]]; then
+if docker-compose --version ; then
     echo "DOCKER-COMPOSE IS ALREADY INSTALLED...!"
   else
     echo "Installing docker compose..."
@@ -50,7 +64,7 @@ fi
 
 mkdir traefik
 mkdir traefik/traefik_data
-touch traefik/traefik/traefik_data/acme.json
+touch traefik/traefik_data/acme.json
 echo 'debug = true' >> traefik/traefik_data/traefik.toml
 echo 'logLevel = "DEBUG"' >> traefik/traefik_data/traefik.toml
 echo 'defaultEntryPoints = ["https","http"]' >> traefik/traefik_data/traefik.toml
@@ -72,7 +86,7 @@ echo '[providers.docker]' >> traefik/traefik_data/traefik.toml
 echo 'endpoint = "unix:///var/run/docker.sock"' >> traefik/traefik_data/traefik.toml
 echo 'watch = true' >> traefik/traefik_data/traefik.toml
 echo 'exposedbydefault = false' >> traefik/traefik_data/traefik.toml
-echo 'network = "traefik-net"' >> traefik/traefik_data/traefik.toml
+echo 'network = "$DOCKER_NETWORK_NAME"' >> traefik/traefik_data/traefik.toml
 echo '  ' >> traefik/traefik_data/traefik.toml
 echo '   ' >> traefik/traefik_data/traefik.toml
 echo '[certificatesResolvers.lets-encrypt.acme]' >> traefik/traefik_data/traefik.toml
@@ -82,7 +96,7 @@ echo '  [certificatesResolvers.lets-encrypt.acme.httpChallenge]' >> traefik/trae
 echo '      entrypoint = "web"' >> traefik/traefik_data/traefik.toml
 
 
-echo 'version: '3'' >>traefik/docker-compose.yml
+echo 'version: "3"' >>traefik/docker-compose.yml
 echo '  ' >>traefik/docker-compose.yml
 echo 'services: ' >>traefik/docker-compose.yml
 echo '  traefik:' >>traefik/docker-compose.yml
@@ -97,14 +111,15 @@ echo '      - /var/run/docker.sock:/var/run/docker.sock' >>traefik/docker-compos
 echo '      - ./traefik_data/traefik.toml:/traefik.toml' >>traefik/docker-compose.yml
 echo '      - ./traefik_data/acme.json:/acme.json' >>traefik/docker-compose.yml
 echo '    networks:' >>traefik/docker-compose.yml
-echo '      - traefik-net' >>traefik/docker-compose.yml
+printf "      - %s\n" $DOCKER_NETWORK_NAME >>traefik/docker-compose.yml
 echo '  ' >>traefik/docker-compose.yml
 echo 'networks:' >>traefik/docker-compose.yml
-echo '  traefik-net:' >>traefik/docker-compose.yml
+
+printf "  %s:\n" $DOCKER_NETWORK_NAME >>traefik/docker-compose.yml
 echo '    external: true' >>traefik/docker-compose.yml
 
 cd traefik
-docker-compose up -d
-
+# docker-compose up -d
+cd
 mkdir $SERVICE_NAME
 
