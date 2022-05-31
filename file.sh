@@ -119,7 +119,7 @@ printf "  %s:\n" $DOCKER_NETWORK_NAME >>traefik/docker-compose.yml
 echo '    external: true' >>traefik/docker-compose.yml
 
 cd traefik
-# docker-compose up -d
+docker-compose up -d
 cd
 mkdir $SERVICE_NAME
 
