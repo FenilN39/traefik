@@ -161,12 +161,8 @@ while true; do
 
         cd traefik
         docker-compose up -d
-        cd
-        mkdir $SERVICE_NAME
-
-                echo "got service name = $SERVICE_NAME"
-        shift "$(($OPTIND -1))"
-        mkdir $SERVICE_NAME
+        cd ..
+        mkdir -p $SERVICE_NAME
         echo 'version: "3"' >>$SERVICE_NAME/docker-compose.yml
         echo 'services:' >>$SERVICE_NAME/docker-compose.yml
         echo '  '$SERVICE_NAME':' >>$SERVICE_NAME/docker-compose.yml
