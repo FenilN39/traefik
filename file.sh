@@ -160,7 +160,7 @@ while true; do
         echo '    external: true' >>traefik/docker-compose.yml
 
         cd traefik
-        docker-compose up -d
+        docker compose up -d
         cd ..
         mkdir -p $SERVICE_NAME
         echo 'version: "3"' >>$SERVICE_NAME/docker-compose.yml
