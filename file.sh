@@ -70,7 +70,7 @@ while true; do
             wget --quiet --output-document=- https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
             sudo add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu $(lsb_release --codename --short) stable"
             sudo apt update
-            sudo apt --yes --no-install-recommends install docker-ce docker-ce-cli containerd.io
+            sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
             sudo usermod --append --groups docker "$USER"
             sudo chmod 666 /var/run/docker.sock
             sudo systemctl enable docker
@@ -80,7 +80,7 @@ while true; do
             sleep 5
         fi
 
-        if docker-compose --version ; then
+        if docker compose --version ; then
             echo "DOCKER-COMPOSE IS ALREADY INSTALLED...!"
           else
             echo "Installing docker compose..."
