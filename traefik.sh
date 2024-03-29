@@ -1,11 +1,27 @@
 DOCKER_NETWORK_NAME="traefik-net"
 
+if [ -x "$(command -v docker)" ]; then
+    echo "docker installed"
+    
+else
+    echo "Install docker"
+    exit 1
+fi
+
 if [ ! "$(docker network ls | grep $DOCKER_NETWORK_NAME)" ]; then
   echo "Creating $DOCKER_NETWORK_NAME network ..."
   docker network create --driver bridge $DOCKER_NETWORK_NAME
 else
   echo "$DOCKER_NETWORK_NAME network exists."
 fi
+
+if [ ! "$(docker ps -f name=traefik | grep traefik)" ]; then
+  echo "Creating traefik container ..."
+else
+  echo "traefik container exists."
+  exit 1
+fi
+
 mkdir traefik
 mkdir traefik/traefik_data
 touch traefik/traefik_data/acme.json
